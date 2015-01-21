@@ -1,17 +1,18 @@
-class String
+#deleting pointless methods and lines in functions
+#adding a helper class Parser
+#fixing File and Directory parse methods
+#fixing identation
 
+class String
   def to_bool
-    case self
-      when "true"  then true
-      when "false" then false
-    end
+    self == "true"
   end
 
   def string_conversion(type)
     case type
       when "nil"     then return nil
       when "symbol"  then return self.to_sym
-      when "string"  then return self
+      when "string"  then return self.to_s
       when "boolean" then return self.to_bool
     end
     return self.to_f if type == "number" and self.include? "."
@@ -19,71 +20,101 @@ class String
   end
 end
 
-module RBFS
+class Hash
+  def interpolate
+    serialized_objects = self.map do |name, object|
+      serialized_object = object.serialize
+      "#{name}:#{serialized_object.length}:#{serialized_object}"
+    end
+    "#{self.count}:#{serialized_objects.join('')}"
+  end
+end
 
+module RBFS
   class File
+    attr_accessor :data
 
     def initialize(object = nil)
       @data = object
-      @data_type = case @data
-                     when NilClass              then :nil
-                     when String                then :string
-                     when Fixnum, Float         then :number
-                     when Symbol                then :symbol
-                     when TrueClass, FalseClass then :boolean
-                   end
     end
 
-    attr_reader :data_type
-
-    attr_accessor :data
+    def data_type
+      case @data
+        when NilClass              then :nil
+        when String                then :string
+        when Fixnum, Float         then :number
+        when Symbol                then :symbol
+        when TrueClass, FalseClass then :boolean
+      end
+    end
 
     def serialize
       "#{self.data_type.to_s}:#{@data.to_s}"
     end
 
     def self.parse(string_data)
-      parsed = File.new
-      data_type = string_data.split(":")[0]
-      data = string_data.split(":")[1].to_s
+      parsed      = File.new
+      data_type   = string_data.split(":")[0]
+      data        = string_data.match(':(.*)')[1]
       parsed.data = data.string_conversion(data_type)
       parsed
     end
   end
 
   class Directory
+    attr_reader :files, :directories
 
     def initialize
-      @directory = {}
+      @directories = {}
+      @files       = {}
     end
-
-    attr_reader :files, :directories
 
     def add_file(name, file)
       if name.include? ":"
         "name cannot contain a colon"
-      else @directory[name] = file
+      else @files[name] = file
       end
-      @files = @directory.select {|key, object| object.class == File}
     end
 
-    def add_directory(name, directory = {})
+    def add_directory(name, directory = Directory.new)
       if name.include? ":"
         "name cannot contain a colon"
-      elsif directory == {}
-        @directory[name] = Directory.new
-      else @directory[name] = directory
+      else @directories[name] = directory
       end
-      @directories = @directory.select{|key, object| object.class == Directory}
     end
 
     def [](name)
-      matches = @directory.select{|key, hash| key == name}
-      matching_dirs = matches.select{|key, hash| hash[key].class == Directory}
-      case matches.length
-        when 0 then nil
-        when 1 then matches[name]
-        else matching_dirs[name]
+      @directories[name] || @files[name]
+    end
+
+    def serialize
+      "#{@files.interpolate}#{@directories.interpolate}"
+    end
+
+    def self.parse(string_data)
+      directory = Directory.new
+      parser = Parser.new(string_data)
+      parser.items_to_parse do |name, data|
+        directory.add_file(name, File.parse(data))
+      end
+      parser.items_to_parse do |name, data|
+        directory.add_directory(name, Directory.parse(data))
+      end
+      directory
+    end
+  end
+
+  class Parser
+    def initialize(string_data)
+      @string_data = string_data
+    end
+
+    def items_to_parse
+      counter, @string_data = @string_data.split(':', 2)
+      counter.to_i.times do
+        name, length, rest = @string_data.split(':', 3)
+        yield name, rest[0...length.to_i]
+        @string_data = rest[length.to_i..-1]
       end
     end
   end
