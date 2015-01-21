@@ -1,14 +1,12 @@
 #fixing to use Binet's Formula, as it's faster than recursion
 #combining all the code in 1 function, instead of 4
 #removing extra lines
-
-ALPHA = (1 + Math.sqrt(5)) / 2
-BETA = 1 - ALPHA
+#using local variables instead of global constants
 
 def series(sequence, n)
-  case sequence
-    when "fibonacci" then ((ALPHA**n - BETA**n) / Math.sqrt(5)).to_i
-    when "lucas"     then (ALPHA**(n - 1) + BETA**(n - 1)).to_i
-    when "summed"    then series("fibonacci", n) + series("lucas", n)
-  end
+  alpha = (1 + Math.sqrt(5)) / 2
+  beta = 1 - alpha
+  return ((alpha**n - beta**n) / Math.sqrt(5)).to_i if sequence == "fibonacci"
+  return (alpha**(n - 1) + beta**(n - 1)).to_i if sequence == "lucas"
+  return series("fibonacci", n) + series("lucas", n) if sequence == "summed"
 end
