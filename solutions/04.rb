@@ -1,3 +1,5 @@
+#fixed a typo
+
 module UI
 
   class TextScreen
@@ -27,15 +29,15 @@ module UI
       helper = Label.new
       helper.instance_eval(&block)
       if border != nil then helper.array.bordered(border) end
-      if style != nil then helper.array.stylize(style) end
-      self.array << helper.array.map {|element| element + "\n"}
+      if style  != nil then helper.array.stylize(style) end
+      helper.array.each {|element| self.array << element + "\n"}
     end
 
     def horizontal(border: nil, style: nil, &block)
-      helper = Labels.new
+      helper = Label.new
       helper.instance_eval(&block)
       if border != nil then helper.array.bordered(border) end
-      if style != nil then helper.array.stylize(style) end
+      if style  != nil  then helper.array.stylize(style) end
       self.array << helper.array
     end
 
