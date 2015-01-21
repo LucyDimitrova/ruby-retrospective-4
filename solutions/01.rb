@@ -1,27 +1,14 @@
-def series(sequence, number)
+#fixing to use Binet's Formula, as it's faster than recursion
+#combining all the code in one function, instead of 4
+
+
+ALPHA = (1 + Math.sqrt(5)) / 2
+BETA = 1 - ALPHA
+
+def series(sequence, n)
   case sequence
-    when "fibonacci" then fibonacci(number)
-    when "lucas"     then lucas(number)
-    when "summed"    then summed(number)
+    when "fibonacci" then ((ALPHA**n - BETA**n) / Math.sqrt(5)).to_i
+    when "lucas"     then (ALPHA**(n - 1) + BETA**(n - 1)).to_i
+    when "summed"    then series("fibonacci", n) + series("lucas", n)
   end
-end
-
-def fibonacci(number)
-  if number == 1 or number == 2
-    1
-  else
-    fibonacci(number - 1) + fibonacci(number - 2)
-  end
-end
-
-def lucas(number)
-  case number
-    when 1 then 2
-    when 2 then 1
-    else lucas(number - 1) + lucas(number - 2)
-  end
-end
-
-def summed(number)
-  fibonacci(number) + lucas(number)
 end
