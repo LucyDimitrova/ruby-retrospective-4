@@ -1,6 +1,6 @@
 #fixing to use Binet's Formula, as it's faster than recursion
-#combining all the code in one function, instead of 4
-
+#combining all the code in 1 function, instead of 4
+#removing extra lines
 
 ALPHA = (1 + Math.sqrt(5)) / 2
 BETA = 1 - ALPHA
