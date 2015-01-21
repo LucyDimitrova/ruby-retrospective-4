@@ -4,16 +4,12 @@
 #fixing identation
 
 class String
-  def to_bool
-    self == "true"
-  end
-
   def string_conversion(type)
     case type
       when "nil"     then return nil
       when "symbol"  then return self.to_sym
       when "string"  then return self.to_s
-      when "boolean" then return self.to_bool
+      when "boolean" then return self == "true"
     end
     return self.to_f if type == "number" and self.include? "."
     return self.to_i if type == "number" and !self.include? "."
